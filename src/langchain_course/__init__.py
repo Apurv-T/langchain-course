@@ -2,13 +2,36 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from typing import List
+from pydantic import BaseModel, Field
 from langchain.agents import create_agent
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 from tavily import TavilyClient
 
+
+class Source(BaseModel):
+    """
+    schema for a source used by the agent
+    """
+
+    url: str = Field(description="The URL of the source.")
+
+
+class AgentResponse(BaseModel):
+    """
+    schema for the agent response with answer and sources
+    """
+
+    answer: str = Field(description="The agent's answer to the query.")
+    sources: List[Source] = Field(
+        description="List of sources used by the agent to generate the answer."
+    )
+
+
 tavily_client = TavilyClient()
+
 
 @tool
 def search(query: str) -> str:
@@ -25,14 +48,16 @@ def search(query: str) -> str:
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
 tools = [search]
-agent = create_agent(model=llm, tools=tools)
+agent = create_agent(model=llm, tools=tools, response_format=AgentResponse)
 
 
 def main() -> None:
     print("Hello from langchain-course!")
     result = agent.invoke(
         {
-            "messages": HumanMessage(content="3 job postings for ai engineer on linkedin in Toronto"),
+            "messages": HumanMessage(
+                content="3 job postings for ai engineer on linkedin in Toronto"
+            ),
         }
     )
     print(result)
