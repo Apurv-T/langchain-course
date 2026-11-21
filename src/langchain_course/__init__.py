@@ -9,9 +9,10 @@ from langchain_openai import ChatOpenAI
 from tavily import TavilyClient
 
 
+
 def main() -> None:
     print("Hello from langchain-course!")
    
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
